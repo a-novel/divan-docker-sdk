@@ -20,7 +20,7 @@ func TestFailure(t *testing.T) {
 
 	defer divan.Clean()
 
-	if err := divan.Start(); err == nil {
+	if err := divan.Start(120); err == nil {
 		t.Error("should fail with wrong config path")
 	} else if err.ID != d2sdk.ErrCannotCreateContainer {
 		t.Errorf("unexpected error ID : got %s, expected %s", err.ID, d2sdk.ErrCannotCreateContainer)

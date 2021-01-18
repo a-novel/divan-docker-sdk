@@ -19,14 +19,7 @@ import (
 		- ErrCannotCreateContainer
 		- ErrCannotRunContainer
 */
-func (dm *DivanManager) Start() *errors.Error {
-	if dm.status == StatusContainerRunning {
-		return errors.New(
-			ErrContainerAlreadyRunning,
-			"a container is already running for this configuration",
-		)
-	}
-
+func (dm *DivanManager) Start(timeout int) *errors.Error {
 	version := dm.Version
 	if version == "" {
 		version = "latest"
@@ -39,7 +32,7 @@ func (dm *DivanManager) Start() *errors.Error {
 		return errors.New(ErrCannotPullImage, fmt.Sprintf("cannot pull divan image : %s", err.Error()))
 	}
 
-	ports, err := utils.PortMapper("8091-8096:8091-8096", "11210-11211:11210-11211", "7777-7778:7777-7778")
+	ports, err := utils.PortMapper("8091-8096:8091-8096", "11210-11211:11210-11211", "6666:8080")
 	if err != nil {
 		return err
 	}
@@ -78,7 +71,11 @@ func (dm *DivanManager) Start() *errors.Error {
 		return errors.New(ErrCannotRunContainer, err.Error())
 	}
 
-	dm.Listen()
+	if err := dm.WaitForReady(timeout); err != nil {
+		return err
+	}
+
+	dm.status = StatusContainerReady
 
 	return nil
 }

@@ -11,11 +11,7 @@ import "github.com/a-novel/errors"
 		- ErrCannotRemoveContainer
 */
 func (dm *DivanManager) Clean() *errors.Error {
-	if dm.status == StatusContainerRunning {
-		if err := dm.Stop(); err != nil {
-			return err
-		}
-	}
+	_ = dm.Stop()
 
 	if err := dm.Remove(); err != nil {
 		return err

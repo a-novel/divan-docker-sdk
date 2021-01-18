@@ -8,8 +8,11 @@ import (
 )
 
 func (dm *DivanManager) Logs() (string, *errors.Error) {
-	if dm.status == "" {
-		return "", errors.New(ErrNoContainerRunning, "no container is running")
+	if dm.status != StatusContainerReady {
+		return "", errors.New(
+			ErrNoContainerRunning,
+			"no container running",
+		)
 	}
 
 	reader, err := dm.cli.ContainerLogs(dm.ctx, dm.containerID, types.ContainerLogsOptions{

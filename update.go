@@ -13,8 +13,11 @@ import (
 		- ErrCannotRunCommand
 */
 func (dm *DivanManager) Update() *errors.Error {
-	if dm.status != StatusContainerRunning {
-		return errors.New(ErrNoContainerRunning, "no container running")
+	if dm.status != StatusContainerReady {
+		return errors.New(
+			ErrNoContainerRunning,
+			"no container running",
+		)
 	}
 
 	if _, err := dm.Exec("cd /root/DIVAN_scripts && go run main.go"); err != nil {

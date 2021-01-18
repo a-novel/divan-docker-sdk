@@ -16,7 +16,7 @@ type responseManager struct {
 func get(u string) (string, int, error) {
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
-		return "", 10, err
+		return "", 0, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -47,40 +47,36 @@ func get(u string) (string, int, error) {
 	}
 }
 
-func (dm *DivanManager) Listen() {
-	dm.status = StatusContainerRunning
+func (dm *DivanManager) ClusterStatus(timeout int) (string, error) {
+	_, status, _ := get("http://localhost:6666/divan_status")
+	retry := 0
+	for status == -1 && retry < timeout {
+		retry++
+		time.Sleep(time.Second)
+		_, status, _ = get("http://localhost:6666/divan_status")
+	}
 
-	go func() {
-		for {
-			if dm.status == "" {
-				return
-			}
+	if status == -1 {
+		return StatusContainerConfigurationError, fmt.Errorf("cannot reach backend (timeout)")
+	}
 
-			res, status, err := get("http://localhost:7777")
+	res, status, err := get("http://localhost:6666/divan_status")
 
-			if err != nil {
-				dm.status = StatusContainerConfigurationError
-				dm.executionError = err
-			}
+	if err != nil {
+		return StatusContainerConfigurationError, err
+	}
 
-			if err == nil && status == 102 {
-				dm.status = StatusContainerProcessing
-			}
+	if status == 503 {
+		return StatusContainerProcessing, nil
+	}
 
-			if err == nil && status == 500 {
-				dm.status = StatusContainerConfigurationError
-				dm.executionError = fmt.Errorf("unexpected response : %s", res)
-			}
+	if status == 500 {
+		return StatusContainerConfigurationError, fmt.Errorf("unexpected response : %s", res)
+	}
 
-			if err == nil && status == 200 {
-				dm.status = StatusContainerReady
-			}
+	if status == 200 {
+		return StatusContainerReady, nil
+	}
 
-			if status >= 0 && status != 102 {
-				return
-			}
-
-			time.Sleep(time.Second)
-		}
-	}()
+	return "", fmt.Errorf("unexpected status %v", status)
 }

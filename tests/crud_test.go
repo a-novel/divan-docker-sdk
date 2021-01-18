@@ -20,22 +20,14 @@ func TestCRUD(t *testing.T) {
 		t.Fatalf("cannot create config : %s", err.Error())
 	}
 
-	if err := divan.Start(); err != nil {
+	if err := divan.Start(120); err != nil {
 		t.Fatalf("cannot start docker container : %s", err.Error())
-	}
-
-	if err := divan.WaitForReady(60); err != nil {
-		t.Fatalf("cluster configuration failed : %s", err.Error())
 	}
 
 	divan.ConfigPath = fmt.Sprintf(path.Join(ePath, "configSampleUpdated.json"))
 
 	if err := divan.Update(); err != nil {
 		t.Errorf("cannot update docker container : %s", err.Error())
-	}
-
-	if err := divan.WaitForReady(60); err != nil {
-		t.Fatalf("cluster configuration update failed : %s", err.Error())
 	}
 
 	if err := divan.Stop(); err != nil {

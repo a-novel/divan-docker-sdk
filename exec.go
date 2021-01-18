@@ -8,8 +8,11 @@ import (
 )
 
 func (dm *DivanManager) Exec(cmd string) (*bufio.Reader, *errors.Error) {
-	if dm.status != StatusContainerRunning {
-		return nil, errors.New(ErrNoContainerRunning, "no container running")
+	if dm.status != StatusContainerReady {
+		return nil, errors.New(
+			ErrNoContainerRunning,
+			"no container running",
+		)
 	}
 
 	execID, err := dm.cli.ContainerExecCreate(dm.ctx, dm.containerID, types.ExecConfig{

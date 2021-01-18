@@ -2,7 +2,6 @@ package d2sdk
 
 import (
 	"github.com/a-novel/errors"
-	"time"
 )
 
 /*
@@ -13,27 +12,16 @@ import (
 		- ErrUnknownExecutionError
 */
 func (dm *DivanManager) WaitForReady(timeout int) *errors.Error {
-	tx := time.Now().UnixNano()
+	status, err := dm.ClusterStatus(timeout)
 
-	for (time.Now().UnixNano() - tx) < int64(timeout*1000000000) {
-		if dm.status != StatusContainerProcessing && dm.status != StatusContainerRunning {
-			break
-		}
-
-		time.Sleep(time.Second)
+	for err == nil && status == StatusContainerProcessing {
+		status, err = dm.ClusterStatus(timeout)
 	}
 
-	if dm.status == StatusContainerConfigurationError {
-		if dm.executionError != nil {
-			return errors.New(
-				ErrExecutionError,
-				dm.executionError.Error(),
-			)
-		}
-
+	if err != nil {
 		return errors.New(
-			ErrUnknownExecutionError,
-			"unable to run configuration (unknown error)",
+			ErrExecutionError,
+			err.Error(),
 		)
 	}
 

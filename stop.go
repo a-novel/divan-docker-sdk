@@ -6,8 +6,11 @@ import (
 )
 
 func (dm *DivanManager) Stop() *errors.Error {
-	if dm.status != StatusContainerRunning {
-		return errors.New(ErrNoContainerRunning, "no container running")
+	if dm.status != StatusContainerReady {
+		return errors.New(
+			ErrNoContainerRunning,
+			"no container running",
+		)
 	}
 
 	if err := dm.cli.ContainerKill(dm.ctx, dm.containerID, ""); err != nil {

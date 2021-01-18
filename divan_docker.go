@@ -13,10 +13,8 @@ type DivanManager struct {
 	Env           []string
 
 	containerID string
-	status      string
+	status string
 
 	ctx context.Context
 	cli *client.Client
-
-	executionError error
 }
